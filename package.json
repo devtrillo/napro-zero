@@ -48,7 +48,7 @@
     "dev:db-down": "docker compose -f db/docker-compose.yml down",
     "dev:db-up": "docker compose -f db/docker-compose.yml up",
     "dev:ui": "vite",
-    "dev:zero-cache": "zero-cache-dev -p src/shared/schema.ts",
+    "dev:zero-cache": "zero-cache-dev",
     "lint": "eslint .",
     "preview": "npm run build && vite preview"
   },

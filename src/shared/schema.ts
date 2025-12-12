@@ -1,6 +1,5 @@
 import {
   createSchema,
-  definePermissions,
   type Row,
   type UpdateValue,
   table,
@@ -47,10 +46,6 @@ export type Schema = typeof schema;
 export type Message = Row<typeof schema.tables.message>;
 export type MessageUpdate = UpdateValue<typeof schema.tables.message>;
 export type User = Row<typeof schema.tables.user>;
-
-export const permissions = definePermissions<unknown, Schema>(schema, () => {
-  return {};
-});
 
 export const zql = createBuilder(schema);
 
