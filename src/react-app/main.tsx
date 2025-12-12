@@ -10,9 +10,9 @@ import { mutators } from "../shared/mutators.js";
 import "./index.css";
 import App from "./App.tsx";
 
-const server = must(
-  import.meta.env.VITE_PUBLIC_SERVER_URL,
-  "required env var VITE_PUBLIC_SERVER_URL"
+const cacheURL = must(
+  import.meta.env.VITE_PUBLIC_ZERO_CACHE_URL,
+  "required env var VITE_PUBLIC_ZERO_CACHE_URL"
 );
 
 const signedCookie = Cookies.get(AUTH_COOKIE_NAME);
@@ -21,7 +21,7 @@ const context = userID ? { userID } : undefined;
 
 const zeroOptions = {
   userID: userID ?? "anon",
-  server,
+  cacheURL,
   schema,
   queries,
   mutators,
