@@ -8,6 +8,7 @@ import type { Schema } from "../shared/schema";
 import { AUTH_COOKIE_NAME } from "../shared/auth";
 import { randomMessage } from "./test-data";
 import { mutators } from "../shared/mutators";
+import { Status } from "./Status";
 
 function App() {
   const z = useZero<Schema>();
@@ -117,6 +118,7 @@ function App() {
             justifyContent: "end",
           }}
         >
+          <Status />
           {user === "anon" ? "" : `Logged in as ${user}`}
           <button onMouseDown={() => toggleLogin()}>
             {user === "anon" ? "Login" : "Logout"}
