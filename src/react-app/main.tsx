@@ -6,7 +6,7 @@ import { schema } from "../shared/schema.js";
 import { queries } from "../shared/queries.js";
 import { must } from "../shared/must.js";
 import { AUTH_COOKIE_NAME } from "../shared/auth.js";
-import { createMutators } from "../shared/mutators.js";
+import { mutators } from "../shared/mutators.js";
 import "./index.css";
 import App from "./App.tsx";
 
@@ -17,13 +17,15 @@ const server = must(
 
 const signedCookie = Cookies.get(AUTH_COOKIE_NAME);
 const userID = signedCookie && signedCookie.split(".")[0];
+const context = userID ? { userID } : undefined;
 
 const zeroOptions = {
   userID: userID ?? "anon",
   server,
   schema,
   queries,
-  mutators: createMutators(userID),
+  mutators,
+  context,
 };
 
 createRoot(document.getElementById("root")!).render(

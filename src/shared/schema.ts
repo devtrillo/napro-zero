@@ -53,3 +53,9 @@ export const permissions = definePermissions<unknown, Schema>(schema, () => {
 });
 
 export const builder = createBuilder(schema);
+
+declare module "@rocicorp/zero" {
+  interface DefaultTypes {
+    schema: Schema;
+  }
+}

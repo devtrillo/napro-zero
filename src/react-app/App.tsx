@@ -7,10 +7,10 @@ import { queries } from "../shared/queries";
 import type { Schema } from "../shared/schema";
 import { AUTH_COOKIE_NAME } from "../shared/auth";
 import { randomMessage } from "./test-data";
-import { Mutators } from "../shared/mutators";
+import { mutators } from "../shared/mutators";
 
 function App() {
-  const z = useZero<Schema, Mutators>();
+  const z = useZero<Schema>();
   const [filterUser, setFilterUser] = useState<string>("");
   const [filterText, setFilterText] = useState<string>("");
   const [action, setAction] = useState<"add" | "remove" | undefined>(undefined);
@@ -41,12 +41,12 @@ function App() {
       return false;
     }
     if (action === "add") {
-      z.mutate.message.create(randomMessage(users));
+      z.mutate(mutators.message.create(randomMessage(users)));
       return true;
     } else {
       // Remove the most recent message
       if (filteredMessages.length > 0) {
-        z.mutate.message.delete(filteredMessages[0].id);
+        z.mutate(mutators.message.delete({ id: filteredMessages[0].id }));
       }
       return true;
     }
@@ -80,7 +80,7 @@ function App() {
     }
     const body = prompt("Edit message", prev);
     if (body !== null && body !== prev) {
-      z.mutate.message.update({ id, body });
+      z.mutate(mutators.message.update({ id, body }));
     }
   };
 
