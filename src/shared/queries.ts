@@ -1,24 +1,21 @@
-import { syncedQuery, escapeLike } from "@rocicorp/zero";
-import { z } from "zod";
-import { builder } from "./schema.js";
+import { escapeLike, defineQueries, defineQuery } from "@rocicorp/zero";
+import * as v from "valibot";
+import { zql } from "./schema.js";
 
-export const queries = {
-  users: syncedQuery("users", z.tuple([]), () => {
-    return builder.user;
+export const queries = defineQueries({
+  users: defineQuery(() => {
+    return zql.user;
   }),
-  messages: syncedQuery("messages", z.tuple([]), () => {
-    return builder.message.related("sender").orderBy("timestamp", "desc");
+  messages: defineQuery(() => {
+    return zql.message.related("sender").orderBy("timestamp", "desc");
   }),
-  filteredMessages: syncedQuery(
-    "filteredMessages",
-    z.tuple([
-      z.object({
-        senderID: z.string(),
-        body: z.string(),
-      }),
-    ]),
-    ({ senderID, body }) => {
-      let query = builder.message.related("sender");
+  filteredMessages: defineQuery(
+    v.object({
+      senderID: v.string(),
+      body: v.string(),
+    }),
+    ({ args: { senderID, body } }) => {
+      let query = zql.message.related("sender");
 
       if (senderID) {
         query = query.where("senderID", senderID);
@@ -31,4 +28,4 @@ export const queries = {
       return query.orderBy("timestamp", "desc");
     }
   ),
-};
+});

@@ -10,7 +10,7 @@ app.get("/api/login", async (c) => {
 });
 
 app.post("/api/get-queries", async (c) => {
-  return c.json(await handleGetQueries(c.req.raw));
+  return c.json(await handleGetQueries(c));
 });
 
 app.post("/api/mutate", async (c) => {

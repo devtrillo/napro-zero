@@ -52,7 +52,7 @@ export const permissions = definePermissions<unknown, Schema>(schema, () => {
   return {};
 });
 
-export const builder = createBuilder(schema);
+export const zql = createBuilder(schema);
 
 declare module "@rocicorp/zero" {
   interface DefaultTypes {
