@@ -1,34 +1,37 @@
-import { Transaction } from "@rocicorp/zero";
-import { Schema, Message, MessageUpdate } from "./schema";
+import { defineMutator, defineMutators } from "@rocicorp/zero";
 import { must } from "./must";
+import * as v from "valibot";
 
-export function createMutators(userID?: string | undefined) {
-  return {
-    message: {
-      async create(tx: Transaction<Schema>, message: Message) {
-        await tx.mutate.message.insert(message);
-      },
-      async delete(tx: Transaction<Schema>, id: string) {
-        mustBeLoggedIn(userID);
-        await tx.mutate.message.delete({ id });
-      },
-      async update(tx: Transaction<Schema>, message: MessageUpdate) {
-        mustBeLoggedIn(userID);
-        const prev = await tx.query.message.where("id", message.id).one().run();
-        if (!prev) {
-          return;
-        }
-        if (prev.senderID !== userID) {
-          throw new Error("Must be sender of message to edit");
-        }
-        await tx.mutate.message.update(message);
-      },
-    },
-  };
-}
-
-function mustBeLoggedIn(userID: string | undefined) {
-  must(userID, "Must be logged in");
-}
-
-export type Mutators = ReturnType<typeof createMutators>;
+export const mutators = defineMutators({
+  message: {
+    create: defineMutator(
+      v.object({
+        id: v.string(),
+        senderID: v.string(),
+        body: v.string(),
+        timestamp: v.number(),
+      }),
+      async ({ tx, args }) => {
+        await tx.mutate.message.insert(args);
+      }
+    ),
+    delete: defineMutator(
+      v.object({
+        id: v.string(),
+      }),
+      async ({ tx, args }) => {
+        await tx.mutate.message.delete(args);
+      }
+    ),
+    update: defineMutator(
+      v.object({
+        id: v.string(),
+        body: v.string(),
+      }),
+      async ({ tx, args, ctx }) => {
+        must(ctx?.userID, "Must be logged in");
+        await tx.mutate.message.update(args);
+      }
+    ),
+  },
+});

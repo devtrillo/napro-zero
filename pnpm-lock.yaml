@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@rocicorp/zero':
-    specifier: ^0.24.3000000000
-    version: 0.24.3000000000(@opentelemetry/core@2.1.0)
+    specifier: 0.25.1
+    version: 0.25.1(@opentelemetry/core@2.1.0)
   ansi-escapes:
     specifier: ^7.1.1
     version: 7.1.1
@@ -17,15 +17,18 @@ dependencies:
   js-cookie:
     specifier: ^3.0.5
     version: 3.0.5
+  postgres:
+    specifier: ^3.4.7
+    version: 3.4.7
   react:
     specifier: 19.0.0
     version: 19.0.0
   react-dom:
     specifier: 19.0.0
     version: 19.0.0(react@19.0.0)
-  zod:
-    specifier: ^3.23.8
-    version: 3.25.76
+  valibot:
+    specifier: ^1.2.0
+    version: 1.2.0(typescript@5.8.3)
 
 devDependencies:
   '@cloudflare/vite-plugin':
@@ -2469,8 +2472,8 @@ packages:
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dev: false
 
-  /@rocicorp/zero-sqlite3@1.0.11:
-    resolution: {integrity: sha512-rOYWjBMrR+BdETDkAbDA3+m5O9LdcyDKV2O1jg43GgYhmfWC9fHyp3vAnAdMdO16tjPEy2eKzf3rwEQkzHeYHQ==}
+  /@rocicorp/zero-sqlite3@1.0.13:
+    resolution: {integrity: sha512-WZ2UlM8kdW3DyHwsRTsaQFxvV/gz+sZNKwNnw9FkxBJNwLUd1/JoiGTdQqAJdd5fEd226huVEh/Nv9hkGgVWyg==}
     engines: {bun: '>=1.1.0', node: 20.x || 22.x || 23.x || 24.x}
     hasBin: true
     requiresBuild: true
@@ -2479,8 +2482,8 @@ packages:
       prebuild-install: 7.1.3
     dev: false
 
-  /@rocicorp/zero@0.24.3000000000(@opentelemetry/core@2.1.0):
-    resolution: {integrity: sha512-rKIoRXnrNj08NLM8I8e5+d0Jl7dNhuolzg2yx8NOVJQERzFBwjApaiTDj1151x+cnt88pnbCf6PsSAEmbcHnBw==}
+  /@rocicorp/zero@0.25.1(@opentelemetry/core@2.1.0):
+    resolution: {integrity: sha512-XarXIvv82rEfHPOG9ye9efvVf7oGF9UT2gMJn//xUeOc7LMvH2zKYow0EFAGP8bOvQwHVq0F5Nqx8e8ijRD0jA==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -2512,7 +2515,8 @@ packages:
       '@rocicorp/lock': 1.0.4
       '@rocicorp/logger': 5.4.0
       '@rocicorp/resolver': 1.0.2
-      '@rocicorp/zero-sqlite3': 1.0.11
+      '@rocicorp/zero-sqlite3': 1.0.13
+      '@standard-schema/spec': 1.0.0
       '@types/basic-auth': 1.1.8
       basic-auth: 2.0.1
       chalk: 5.6.2
@@ -2737,6 +2741,10 @@ packages:
   /@speed-highlight/core@1.2.7:
     resolution: {integrity: sha512-0dxmVj4gxg3Jg879kvFS/msl4s9F3T9UXC1InxgOf7t5NvcPD97u/WTA5vL/IxWHMn7qSxBozqrnnE2wvl1m8g==}
     dev: true
+
+  /@standard-schema/spec@1.0.0:
+    resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
+    dev: false
 
   /@types/aws-lambda@8.10.152:
     resolution: {integrity: sha512-soT/c2gYBnT5ygwiHPmd9a1bftj462NWVk2tKCc1PYHSIacB2UwbTS2zYG4jzag1mRDuzg/OjtxQjQ2NKRB6Rw==}
@@ -5253,7 +5261,6 @@ packages:
     resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
     engines: {node: '>=14.17'}
     hasBin: true
-    dev: true
 
   /typical@7.3.0:
     resolution: {integrity: sha512-ya4mg/30vm+DOWfBg4YK3j2WD6TWtRkCbasOJr40CseYENzCUby/7rIvXA99JGsQHeNxLbnXdyLLxKSv3tauFw==}
@@ -5330,6 +5337,17 @@ packages:
   /uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
+    dev: false
+
+  /valibot@1.2.0(typescript@5.8.3):
+    resolution: {integrity: sha512-mm1rxUsmOxzrwnX5arGS+U4T25RdvpPjPN4yR0u9pUBov9+zGVtO84tif1eY4r6zWxVxu3KzIyknJy3rxfRZZg==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      typescript: 5.8.3
     dev: false
 
   /vite@6.3.7(@types/node@24.0.4):
@@ -5566,7 +5584,3 @@ packages:
   /zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
     dev: true
-
-  /zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-    dev: false

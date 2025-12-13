@@ -199,4 +199,4 @@ dist
 !.dev.vars.example
 
 ### Zero ###
-.zero-replica*
+zero.db*
