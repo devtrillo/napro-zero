@@ -1,5 +1,4 @@
 import { randBetween, randID, randInt } from "./rand";
-import type { Message, User } from "../shared/schema";
 
 const requests = [
   "Hey guys, is the zero package ready yet?",
@@ -21,16 +20,13 @@ const replies = [
   "I could send you a tarball, but it won't work",
 ];
 
-export function randomMessage(users: readonly User[]): Message {
+export function randomMessage() {
   const id = randID();
   const timestamp = randBetween(1727395200000, new Date().getTime());
   const isRequest = randInt(10) <= 6;
   const messages = isRequest ? requests : replies;
-  const senders = users.filter((u) => u.partner === !isRequest);
-  const senderID = senders[randInt(senders.length)].id;
   return {
     id,
-    senderID,
     body: messages[randInt(messages.length)],
     timestamp,
   };

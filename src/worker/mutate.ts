@@ -5,17 +5,15 @@ import type { Context } from "hono";
 import { must } from "../shared/must.js";
 import { schema } from "../shared/schema.js";
 import { mutators } from "../shared/mutators.js";
-import { getUserID } from "./login.js";
 import { mustGetMutator } from "@rocicorp/zero";
 
-export async function handleMutate(c: Context) {
+export async function handleMutate(c: Context, userID: string) {
   const dbProvider = zeroPostgresJS(
     schema,
     postgres(must(c.env.ZERO_UPSTREAM_DB, "required env var ZERO_UPSTREAM_DB"))
   );
 
-  const userID = await getUserID(c);
-  const ctx = userID ? { userID } : undefined;
+  const ctx = { userID };
 
   return await handleMutateRequest(
     dbProvider,

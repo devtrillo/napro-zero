@@ -2,9 +2,12 @@
 
 CREATE TABLE "user" (
   "id" VARCHAR PRIMARY KEY,
+  "auth_user_id" VARCHAR UNIQUE,
   "name" VARCHAR NOT NULL,
   "partner" BOOLEAN NOT NULL
 );
+
+-- Better Auth tables are created separately via `pnpm auth:migrate`.
 
 CREATE TABLE "message" (
   "id" VARCHAR PRIMARY KEY,

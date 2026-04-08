@@ -12,6 +12,7 @@ import { formatDate } from "../react-app/date.js";
 
 export class ZeroDO extends DurableObject {
   #z: Zero<Schema> = new Zero({
+    context: { userID: "anon" },
     server: "http://localhost:4848",
     userID: "anon",
     schema,

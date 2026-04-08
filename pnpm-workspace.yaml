@@ -1,0 +1,8 @@
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@rocicorp/zero-sqlite3'
+  - better-sqlite3
+  - esbuild
+  - protobufjs
+  - sharp
+  - workerd

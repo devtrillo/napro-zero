@@ -13,23 +13,30 @@
     "publish": true
   },
   "dependencies": {
+    "@better-auth/passkey": "^1.6.0",
     "@rocicorp/zero": "^1.0.0",
     "ansi-escapes": "^7.1.1",
+    "better-auth": "^1.6.0",
     "hono": "4.8.2",
     "js-cookie": "^3.0.5",
+    "pg": "^8.20.0",
     "postgres": "^3.4.7",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "resend": "^6.10.0",
     "valibot": "^1.2.0"
   },
   "devDependencies": {
+    "@better-auth/cli": "^1.4.21",
     "@cloudflare/vite-plugin": "1.13.13",
     "@eslint/js": "9.29.0",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "24.0.4",
+    "@types/pg": "^8.20.0",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "@vitejs/plugin-react": "5.0.0",
+    "concurrently": "^9.2.1",
     "eslint": "9.27.0",
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.20",
@@ -40,18 +47,20 @@
     "wrangler": "4.43.0"
   },
   "scripts": {
+    "auth:migrate": "better-auth migrate --config src/worker/auth.ts",
     "build": "tsc -b && vite build",
     "cf-typegen": "wrangler types",
     "check": "tsc && vite build && wrangler deploy --dry-run",
     "deploy": "wrangler deploy",
-    "dev:clean": "docker compose -f db/docker-compose.yml down -v && rm -rf .zero-replica*",
-    "dev:db-down": "docker compose -f db/docker-compose.yml down",
+    "db:clean": "docker compose -f db/docker-compose.yml down -v && rm -rf .zero-replica*",
+    "db:down": "docker compose -f db/docker-compose.yml down",
     "dev:db-up": "docker compose -f db/docker-compose.yml up",
     "dev:ui": "vite",
+    "dev": "concurrently \"pnpm:dev:* \"",
     "dev:zero-cache": "zero-cache-dev",
     "lint": "eslint .",
     "preview": "npm run build && vite preview"
   },
   "type": "module",
-  "packageManager": "pnpm@8.15.9+sha512.499434c9d8fdd1a2794ebf4552b3b25c0a633abcee5bb15e7b5de90f32f47b513aca98cd5cfd001c31f0db454bc3804edccd578501e4ca293a6816166bbd9f81"
+  "packageManager": "pnpm@10.28.1"
 }

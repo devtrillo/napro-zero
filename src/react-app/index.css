@@ -28,7 +28,7 @@ body {
   padding: 2rem;
   text-align: center;
   width: 90%;
-  min-width: 600px;
+  min-width: 320px;
   max-width: 1280px;
 }
 
@@ -82,4 +82,63 @@ td:last-child {
   gap: 1rem;
   align-items: center;
   margin-bottom: 1rem;
+}
+
+.auth-shell {
+  min-height: calc(100vh - 4rem);
+  display: grid;
+  place-items: center;
+}
+
+.auth-card {
+  width: min(30rem, 100%);
+  border: 1px solid #2b2b2b;
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  color: #8da2ff;
+}
+
+.auth-copy {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.auth-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.auth-form input {
+  border: 1px solid #2b2b2b;
+  border-radius: 10px;
+  padding: 0.8rem 0.9rem;
+  background: rgba(255, 255, 255, 0.02);
+  color: inherit;
+}
+
+.auth-actions {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.auth-message {
+  color: #8ee39a;
+}
+
+.auth-error {
+  color: #ff8f8f;
 }

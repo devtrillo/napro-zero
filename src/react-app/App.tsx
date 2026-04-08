@@ -1,20 +1,153 @@
-import { type MouseEvent, useState } from "react";
+import {
+  type FormEvent,
+  type MouseEvent,
+  useEffect,
+  useState,
+} from "react";
 import { useQuery, useZero } from "@rocicorp/zero/react";
-import Cookies from "js-cookie";
+import { ZeroProvider } from "@rocicorp/zero/react";
 import { formatDate } from "./date";
 import { useInterval } from "./use-interval";
 import { queries } from "../shared/queries";
 import type { Schema } from "../shared/schema";
-import { AUTH_COOKIE_NAME } from "../shared/auth";
+import type { AppSession } from "../shared/auth";
 import { randomMessage } from "./test-data";
 import { mutators } from "../shared/mutators";
 import { Status } from "./Status";
+import { authClient } from "./auth-client";
+import { schema } from "../shared/schema";
+import { must } from "../shared/must";
 
-function App() {
+const cacheURL = must(
+  import.meta.env.VITE_PUBLIC_ZERO_CACHE_URL,
+  "required env var VITE_PUBLIC_ZERO_CACHE_URL"
+);
+
+function SignInScreen() {
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    "magic-link" | "github" | "passkey" | null
+  >(null);
+
+  const handleMagicLink = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setPendingAction("magic-link");
+    setError(null);
+    setMessage(null);
+    try {
+      await authClient.signIn.magicLink({
+        email,
+        name,
+        callbackURL: window.location.origin,
+      });
+      setMessage("Check your email for a sign-in link.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to send magic link.");
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleGitHub = async () => {
+    setPendingAction("github");
+    setError(null);
+    await authClient.signIn.social({
+      provider: "github",
+      callbackURL: window.location.origin,
+    });
+  };
+
+  const handlePasskey = async () => {
+    setPendingAction("passkey");
+    setError(null);
+    const result = await authClient.signIn.passkey({
+      autoFill: true,
+    });
+    if (result.error) {
+      setError(result.error.message ?? "Unable to sign in with passkey.");
+      setPendingAction(null);
+      return;
+    }
+    window.location.reload();
+  };
+
+  return (
+    <div className="auth-shell">
+      <div className="auth-card">
+        <p className="eyebrow">Passwordless only</p>
+        <h1>Sign in to Napro Zero</h1>
+        <p className="auth-copy">
+          Use a magic link, GitHub, or an enrolled passkey. Passwords are not supported.
+        </p>
+        <form className="auth-form" onSubmit={handleMagicLink}>
+          <label>
+            Email
+            <input
+              autoComplete="email"
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+              type="email"
+              value={email}
+            />
+          </label>
+          <label>
+            Name
+            <input
+              autoComplete="name"
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Display name"
+              required
+              value={name}
+            />
+          </label>
+          <button disabled={pendingAction !== null} type="submit">
+            {pendingAction === "magic-link" ? "Sending..." : "Email me a sign-in link"}
+          </button>
+        </form>
+        <div className="auth-actions">
+          <button disabled={pendingAction !== null} onClick={handleGitHub} type="button">
+            {pendingAction === "github" ? "Redirecting..." : "Continue with GitHub"}
+          </button>
+          <button disabled={pendingAction !== null} onClick={handlePasskey} type="button">
+            {pendingAction === "passkey" ? "Waiting for passkey..." : "Sign in with passkey"}
+          </button>
+        </div>
+        {message ? <p className="auth-message">{message}</p> : null}
+        {error ? <p className="auth-error">{error}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function AuthedApp({ appSession }: { appSession: AppSession }) {
+  const zeroOptions = {
+    cacheURL,
+    context: {
+      userID: appSession.appUser.id,
+    },
+    mutators,
+    queries,
+    schema,
+    userID: appSession.appUser.id,
+  };
+
+  return (
+    <ZeroProvider {...zeroOptions}>
+      <MessagesApp appSession={appSession} />
+    </ZeroProvider>
+  );
+}
+
+function MessagesApp({ appSession }: { appSession: AppSession }) {
   const z = useZero<Schema>();
   const [filterUser, setFilterUser] = useState<string>("");
   const [filterText, setFilterText] = useState<string>("");
   const [action, setAction] = useState<"add" | "remove" | undefined>(undefined);
+  const [authAction, setAuthAction] = useState<"logout" | "passkey" | null>(null);
 
   // Use Zero queries
   const [users] = useQuery(queries.users());
@@ -42,7 +175,7 @@ function App() {
       return false;
     }
     if (action === "add") {
-      z.mutate(mutators.message.create(randomMessage(users)));
+      z.mutate(mutators.message.create(randomMessage()));
       return true;
     } else {
       // Remove the most recent message
@@ -55,13 +188,7 @@ function App() {
 
   const addMessages = () => setAction("add");
 
-  const removeMessages = (e: MouseEvent) => {
-    if (z.userID === "anon" && !e.shiftKey) {
-      alert(
-        "You must be logged in to delete. Hold the shift key to try anyway."
-      );
-      return;
-    }
+  const removeMessages = () => {
     setAction("remove");
   };
 
@@ -85,13 +212,24 @@ function App() {
     }
   };
 
-  const toggleLogin = async () => {
-    if (z.userID === "anon") {
-      await fetch("/api/login");
-    } else {
-      Cookies.remove(AUTH_COOKIE_NAME);
-    }
+  const logout = async () => {
+    setAuthAction("logout");
+    await authClient.signOut();
     location.reload();
+  };
+
+  const addPasskey = async () => {
+    setAuthAction("passkey");
+    const result = await authClient.passkey.addPasskey({
+      name: `${navigator.platform} passkey`,
+      authenticatorAttachment: "platform",
+    });
+    if (result.error) {
+      alert(result.error.message);
+    } else {
+      alert("Passkey added.");
+    }
+    setAuthAction(null);
   };
 
   // If initial sync hasn't completed, these can be empty.
@@ -99,7 +237,7 @@ function App() {
     return null;
   }
 
-  const user = users.find((user) => user.id === z.userID)?.name ?? "anon";
+  const user = users.find((user) => user.id === z.userID)?.name ?? appSession.user.name;
 
   return (
     <>
@@ -119,9 +257,13 @@ function App() {
           }}
         >
           <Status />
-          {user === "anon" ? "" : `Logged in as ${user}`}
-          <button onMouseDown={() => toggleLogin()}>
-            {user === "anon" ? "Login" : "Logout"}
+          <span>{`Signed in as ${user}`}</span>
+          <span>{appSession.user.email}</span>
+          <button disabled={authAction !== null} onClick={addPasskey} type="button">
+            {authAction === "passkey" ? "Adding passkey..." : "Add passkey"}
+          </button>
+          <button disabled={authAction !== null} onClick={logout} type="button">
+            {authAction === "logout" ? "Signing out..." : "Logout"}
           </button>
         </div>
       </div>
@@ -202,6 +344,68 @@ function App() {
       )}
     </>
   );
+}
+
+function App() {
+  const { data: session, isPending } = authClient.useSession();
+  const [appSession, setAppSession] = useState<AppSession | null>(null);
+  const [loadingSession, setLoadingSession] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!session) {
+      setAppSession(null);
+      setLoadingSession(false);
+      setSessionError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingSession(true);
+    setSessionError(null);
+
+    void fetch("/api/session")
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Unable to load app session.");
+        }
+        return (await response.json()) as AppSession;
+      })
+      .then((data) => {
+        if (!cancelled) {
+          setAppSession(data);
+          setLoadingSession(false);
+        }
+      })
+      .catch((error: Error) => {
+        if (!cancelled) {
+          setSessionError(error.message);
+          setLoadingSession(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
+
+  if (isPending || loadingSession) {
+    return <div className="auth-shell">Loading session...</div>;
+  }
+
+  if (!session) {
+    return <SignInScreen />;
+  }
+
+  if (sessionError) {
+    return <div className="auth-shell auth-error">{sessionError}</div>;
+  }
+
+  if (!appSession) {
+    return <div className="auth-shell">Preparing your profile...</div>;
+  }
+
+  return <AuthedApp appSession={appSession} />;
 }
 
 export default App;

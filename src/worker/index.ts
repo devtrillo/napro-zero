@@ -1,20 +1,33 @@
 import { Hono } from "hono";
 import { handleGetQueries } from "./get-queries.js";
-import { handleLogin } from "./login.js";
 import { handleMutate } from "./mutate.js";
+import { getAppSession } from "./app-user.js";
+import { createAuth } from "./auth.js";
 
 const app = new Hono<{ Bindings: Env }>();
 
-app.get("/api/login", async (c) => {
-  return await handleLogin(c);
+app.on(["GET", "POST"], "/api/auth/*", async (c) => {
+  return createAuth(c.env).handler(c.req.raw);
+});
+
+app.get("/api/session", async (c) => {
+  return c.json(await getAppSession(c));
 });
 
 app.post("/api/get-queries", async (c) => {
-  return c.json(await handleGetQueries(c));
+  const appSession = await getAppSession(c);
+  if (!appSession) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  return c.json(await handleGetQueries(c, appSession.appUser.id));
 });
 
 app.post("/api/mutate", async (c) => {
-  return c.json(await handleMutate(c));
+  const appSession = await getAppSession(c);
+  if (!appSession) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  return c.json(await handleMutate(c, appSession.appUser.id));
 });
 
 // Durable Object endpoint - trigger DO to start watching
