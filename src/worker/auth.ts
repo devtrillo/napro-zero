@@ -1,8 +1,10 @@
 import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
-import { Pool } from "pg";
 import { Resend } from "resend";
+import { getDb } from "../db/client.js";
+import * as schema from "../db/schema/index.js";
 
 type AuthEnvSource = {
   AUTH_FROM_EMAIL?: string;
@@ -36,8 +38,6 @@ const DEFAULTS: ResolvedAuthEnv = {
   secret: "development-only-better-auth-secret-123456",
   zeroUpstreamDB: "postgres://postgres:postgres@127.0.0.1:5432/postgres",
 };
-
-const poolCache = new Map<string, Pool>();
 
 function getValue(
   env: AuthEnvSource,
@@ -101,25 +101,6 @@ function resolveAuthEnv(
   };
 }
 
-function getPool(connectionString: string): Pool {
-  const cached = poolCache.get(connectionString);
-  if (cached) {
-    return cached;
-  }
-
-  const pool = new Pool({
-    connectionString,
-    max: 5,
-  });
-  poolCache.set(connectionString, pool);
-  return pool;
-}
-
-export function getAuthDatabase(env: AuthEnvSource, allowDefaults = false): Pool {
-  const resolved = resolveAuthEnv(env, allowDefaults);
-  return getPool(resolved.zeroUpstreamDB);
-}
-
 export function createAuth(env: AuthEnvSource, allowDefaults = false) {
   const resolved = resolveAuthEnv(env, allowDefaults);
   const resend = new Resend(resolved.resendAPIKey);
@@ -128,7 +109,10 @@ export function createAuth(env: AuthEnvSource, allowDefaults = false) {
     appName: resolved.appName,
     baseURL: resolved.baseURL,
     secret: resolved.secret,
-    database: getPool(resolved.zeroUpstreamDB),
+    database: drizzleAdapter(getDb({ ZERO_UPSTREAM_DB: resolved.zeroUpstreamDB }, true), {
+      provider: "pg",
+      schema,
+    }),
     trustedOrigins: [resolved.baseURL],
     advanced: {
       useSecureCookies: resolved.baseURL.startsWith("https://"),

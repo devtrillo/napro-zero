@@ -19,7 +19,7 @@ app.post("/api/get-queries", async (c) => {
   if (!appSession) {
     return c.json({ error: "Unauthorized" }, 401);
   }
-  return c.json(await handleGetQueries(c, appSession.appUser.id));
+  return c.json(await handleGetQueries(c, appSession.user.id));
 });
 
 app.post("/api/mutate", async (c) => {
@@ -27,7 +27,7 @@ app.post("/api/mutate", async (c) => {
   if (!appSession) {
     return c.json({ error: "Unauthorized" }, 401);
   }
-  return c.json(await handleMutate(c, appSession.appUser.id));
+  return c.json(await handleMutate(c, appSession.user.id));
 });
 
 // Durable Object endpoint - trigger DO to start watching

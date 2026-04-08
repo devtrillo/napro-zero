@@ -127,12 +127,12 @@ function AuthedApp({ appSession }: { appSession: AppSession }) {
   const zeroOptions = {
     cacheURL,
     context: {
-      userID: appSession.appUser.id,
+      userID: appSession.user.id,
     },
     mutators,
     queries,
     schema,
-    userID: appSession.appUser.id,
+    userID: appSession.user.id,
   };
 
   return (

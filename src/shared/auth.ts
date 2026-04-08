@@ -2,14 +2,7 @@ export type Context = {
   userID: string;
 };
 
-export type AppUser = {
-  id: string;
-  name: string;
-  partner: boolean;
-};
-
 export type AppSession = {
-  appUser: AppUser;
   session: {
     id: string;
     expiresAt: string | Date;

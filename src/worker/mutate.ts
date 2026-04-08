@@ -1,17 +1,14 @@
-import postgres from "postgres";
-import { handleMutateRequest } from "@rocicorp/zero/pg";
-import { zeroPostgresJS } from "@rocicorp/zero/server/adapters/postgresjs";
+import { handleMutateRequest } from "@rocicorp/zero/server";
+import { zeroDrizzle } from "@rocicorp/zero/server/adapters/drizzle";
+import type { DrizzleDatabase } from "@rocicorp/zero/server/adapters/drizzle";
 import type { Context } from "hono";
-import { must } from "../shared/must.js";
+import { getDb } from "../db/client.js";
 import { schema } from "../shared/schema.js";
 import { mutators } from "../shared/mutators.js";
 import { mustGetMutator } from "@rocicorp/zero";
 
 export async function handleMutate(c: Context, userID: string) {
-  const dbProvider = zeroPostgresJS(
-    schema,
-    postgres(must(c.env.ZERO_UPSTREAM_DB, "required env var ZERO_UPSTREAM_DB"))
-  );
+  const dbProvider = zeroDrizzle(schema, getDb(c.env) as unknown as DrizzleDatabase);
 
   const ctx = { userID };
 

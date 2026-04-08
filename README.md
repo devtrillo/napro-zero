@@ -3,7 +3,8 @@
 This demo shows how to run [Zero](https://github.com/rocicorp/zero) in a Cloudflare Workers + Durable Objects environment. It demonstrates:
 
 - A React web UI using Zero
-- Using Hono to implement Zero's API requirements and auth
+- Using Hono to implement Zero's API requirements and Better Auth
+- Using Drizzle as the shared Postgres runtime for auth and Zero mutations
 - A Durable Object running Zero as another client for live monitoring
 
 ## Why run Zero **Client** in a Durable Object!?
@@ -52,7 +53,7 @@ More generally, any time a DO needs some subset of Postgres data, it's useful to
 │  Postgres (localhost:5432)                              │
 │  - Source of truth                                      │
 │  - Logical replication enabled                          │
-│  - User and Message tables                              │
+│  - Better Auth tables and Message table                 │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -60,25 +61,28 @@ More generally, any time a DO needs some subset of Postgres data, it's useful to
 
 You'll need **3 terminals** to run this example!
 
-### 1. Start Postgres
+### 1. Start Postgres and apply migrations
 
 ```bash
 # Terminal 1
-npm run dev:db-up
+pnpm dev:db-up
+pnpm db:migrate
 ```
+
+The database schema now comes from Drizzle migrations in `src/db/migrations`. `db/seed.sql` is no longer used.
 
 ### 2. Start Zero Cache
 
 ```bash
 # Terminal 2
-npm run dev:zero-cache
+pnpm dev:zero-cache
 ```
 
 ### 3. Start UI
 
 ```bash
 # Terminal 3
-npm run dev:ui
+pnpm dev:ui
 ```
 
 The Vite dev server (with Cloudflare plugin) runs your Worker code locally, handling both the React UI and API endpoints.
@@ -86,7 +90,7 @@ The Vite dev server (with Cloudflare plugin) runs your Worker code locally, hand
 Open a browser at **http://localhost:5173** to:
 
 - Add/edit/delete messages
-- Login/logout (randomly assigns you a user)
+- Sign in with a magic link, GitHub, or a passkey
 - Filter messages by sender or text content
 
 ### 3. Trigger the Durable Object
@@ -106,16 +110,21 @@ The DO will start printing a live-updating table of messages to **Terminal 3** (
 ```
 hello-zero-cf/
 ├── src/
+│   ├── db/                  # Drizzle client, schema, and migrations
+│   │   ├── client.ts        # Shared pg.Pool + Drizzle database
+│   │   ├── migrations/      # Generated Drizzle SQL migrations
+│   │   └── schema/          # Drizzle table definitions
 │   ├── shared/              # Code shared between client and server
-│   │   ├── schema.ts        # Zero schema (User, Message tables)
+│   │   ├── schema.ts        # Zero schema (temporary app-facing schema)
 │   │   ├── queries.ts       # Synced queries
 │   │   ├── mutators.ts      # Custom mutators (create, delete, update)
-│   │   ├── auth.ts          # Shared auth constants
+│   │   ├── auth.ts          # Shared auth/session types
 │   │   └── must.ts          # Utility for null checking
 │   ├── worker/              # Cloudflare Worker code
 │   │   ├── index.ts         # Hono app with routes
+│   │   ├── auth.ts          # Better Auth configuration
+│   │   ├── app-user.ts      # Session shaping from Better Auth session
 │   │   ├── zero-do.ts       # Durable Object with Zero client
-│   │   ├── login.ts         # Authentication handlers
 │   │   ├── mutate.ts        # Mutation endpoint
 │   │   └── get-queries.ts   # Query endpoint
 │   └── react-app/           # React UI
@@ -123,8 +132,8 @@ hello-zero-cf/
 │       ├── main.tsx         # Entry point with ZeroProvider
 │       └── ...
 ├── db/
-│   ├── docker-compose.yml   # Postgres with replication config
-│   └── seed.sql             # Database schema and seed data
+│   └── docker-compose.yml   # Postgres with replication config
+├── drizzle.config.ts        # Drizzle migration configuration
 ├── wrangler.json            # Cloudflare Workers config
 └── .env                     # Environment variables
 ```
@@ -187,18 +196,11 @@ export function createMutators(userID?: string) {
 }
 ```
 
-### Cookie-Based Auth
+### Drizzle-Backed Auth And Mutations
 
-Uses Hono's signed cookies (no JWT library needed):
-
-```typescript
-// Server: src/worker/login.ts
-await setSignedCookie(c, AUTH_COOKIE_NAME, userID, secretKey);
-
-// Client: src/react-app/main.tsx
-const signedCookie = Cookies.get(AUTH_COOKIE_NAME);
-const userID = signedCookie && signedCookie.split(".")[0];
-```
+- Better Auth uses the Drizzle adapter against the shared `pg` pool in `src/db/client.ts`
+- Zero mutations use `zeroDrizzle` with the same Drizzle database instance
+- Drizzle migrations are the source of truth for schema creation on a clean database
 
 ### Durable Object with Zero
 
@@ -231,13 +233,13 @@ export class ZeroDO extends DurableObject {
 To stop Postgres and remove volumes:
 
 ```bash
-npm run dev:db-down
+pnpm db:down
 ```
 
 To completely clean the database and Zero replica files:
 
 ```bash
-npm run dev:clean
+pnpm db:clean
 ```
 
 ## Deployment
@@ -246,7 +248,8 @@ This is a development demo. For production deployment to Cloudflare:
 
 1. Create a production Postgres database with logical replication enabled
 2. Set up environment variables in Cloudflare dashboard or via `wrangler secret`
-3. Deploy: `npm run deploy`
+3. Run Drizzle migrations against the target database
+4. Deploy: `pnpm deploy`
 
 Note: You'll need to host the Zero cache server somewhere accessible to your Worker (Cloudflare Workers can make outbound HTTP requests).
 

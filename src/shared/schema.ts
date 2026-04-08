@@ -4,7 +4,6 @@ import {
   type UpdateValue,
   table,
   string,
-  boolean,
   number,
   relationships,
   createBuilder,
@@ -14,7 +13,6 @@ const user = table("user")
   .columns({
     id: string(),
     name: string(),
-    partner: boolean(),
   })
   .primaryKey("id");
 

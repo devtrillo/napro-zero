@@ -6,7 +6,13 @@ declare namespace Cloudflare {
 		mainModule: typeof import("./src/worker/index");
 	}
 	interface Env {
-		AUTH_SECRET: string;
+		AUTH_FROM_EMAIL: string;
+		BETTER_AUTH_APP_NAME: string;
+		BETTER_AUTH_SECRET: string;
+		BETTER_AUTH_URL: string;
+		GITHUB_CLIENT_ID: string;
+		GITHUB_CLIENT_SECRET: string;
+		RESEND_API_KEY: string;
 		ZERO_UPSTREAM_DB: string;
 		ZERO_DO: DurableObjectNamespace;
 	}
