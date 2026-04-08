@@ -147,22 +147,22 @@ The demo uses Zero's synced queries API (not legacy ad-hoc queries):
 ```typescript
 // src/shared/queries.ts
 export const queries = {
-  users: syncedQuery("users", z.tuple([]), () => {
-    return builder.user;
-  }),
-  messages: syncedQuery("messages", z.tuple([]), () => {
-    return builder.message.related("sender").orderBy("timestamp", "desc");
-  }),
-  filteredMessages: syncedQuery(
-    "filteredMessages",
-    z.tuple([z.object({ senderID: z.string(), body: z.string() })]),
-    ({ senderID, body }) => {
-      let query = builder.message.related("sender");
-      if (senderID) query = query.where("senderID", senderID);
-      if (body) query = query.where("body", "LIKE", `%${escapeLike(body)}%`);
-      return query.orderBy("timestamp", "desc");
-    }
-  ),
+	users: syncedQuery("users", z.tuple([]), () => {
+		return builder.user;
+	}),
+	messages: syncedQuery("messages", z.tuple([]), () => {
+		return builder.message.related("sender").orderBy("timestamp", "desc");
+	}),
+	filteredMessages: syncedQuery(
+		"filteredMessages",
+		z.tuple([z.object({ senderID: z.string(), body: z.string() })]),
+		({ senderID, body }) => {
+			let query = builder.message.related("sender");
+			if (senderID) query = query.where("senderID", senderID);
+			if (body) query = query.where("body", "LIKE", `%${escapeLike(body)}%`);
+			return query.orderBy("timestamp", "desc");
+		},
+	),
 };
 ```
 
@@ -173,26 +173,26 @@ Server-side mutators with authentication checks:
 ```typescript
 // src/shared/mutators.ts
 export function createMutators(userID?: string) {
-  return {
-    message: {
-      async create(tx: Transaction<Schema>, message: Message) {
-        await tx.mutate.message.insert(message);
-      },
-      async delete(tx: Transaction<Schema>, id: string) {
-        mustBeLoggedIn(userID);
-        await tx.mutate.message.delete({ id });
-      },
-      async update(tx: Transaction<Schema>, message: MessageUpdate) {
-        mustBeLoggedIn(userID);
-        const prev = await tx.query.message.where("id", message.id).one().run();
-        if (!prev) return;
-        if (prev.senderID !== userID) {
-          throw new Error("Must be sender of message to edit");
-        }
-        await tx.mutate.message.update(message);
-      },
-    },
-  };
+	return {
+		message: {
+			async create(tx: Transaction<Schema>, message: Message) {
+				await tx.mutate.message.insert(message);
+			},
+			async delete(tx: Transaction<Schema>, id: string) {
+				mustBeLoggedIn(userID);
+				await tx.mutate.message.delete({ id });
+			},
+			async update(tx: Transaction<Schema>, message: MessageUpdate) {
+				mustBeLoggedIn(userID);
+				const prev = await tx.query.message.where("id", message.id).one().run();
+				if (!prev) return;
+				if (prev.senderID !== userID) {
+					throw new Error("Must be sender of message to edit");
+				}
+				await tx.mutate.message.update(message);
+			},
+		},
+	};
 }
 ```
 
@@ -209,22 +209,22 @@ The DO runs Zero's lower-level class API (not React hooks):
 ```typescript
 // src/worker/zero-do.ts
 export class ZeroDO extends DurableObject {
-  #z: Zero<Schema> = new Zero({
-    server: "http://localhost:4848",
-    userID: "anon",
-    schema,
-    kvStore: "mem",
-  });
+	#z: Zero<Schema> = new Zero({
+		server: "http://localhost:4848",
+		userID: "anon",
+		schema,
+		kvStore: "mem",
+	});
 
-  constructor(state: DurableObjectState, env: Env) {
-    super(state, env);
-    const view = this.#z.materialize(queries.messages());
-    view.addListener(this.#render);
-  }
+	constructor(state: DurableObjectState, env: Env) {
+		super(state, env);
+		const view = this.#z.materialize(queries.messages());
+		view.addListener(this.#render);
+	}
 
-  #render = (messages) => {
-    // Print live-updating table to console
-  };
+	#render = (messages) => {
+		// Print live-updating table to console
+	};
 }
 ```
 

@@ -1,43 +1,43 @@
 import {
-  createSchema,
-  type Row,
-  type UpdateValue,
-  table,
-  string,
-  number,
-  relationships,
-  createBuilder,
+	createSchema,
+	type Row,
+	type UpdateValue,
+	table,
+	string,
+	number,
+	relationships,
+	createBuilder,
 } from "@rocicorp/zero";
 
 const user = table("user")
-  .columns({
-    id: string(),
-    name: string(),
-  })
-  .primaryKey("id");
+	.columns({
+		id: string(),
+		name: string(),
+	})
+	.primaryKey("id");
 
 const message = table("message")
-  .columns({
-    id: string(),
-    senderID: string().from("sender_id"),
-    body: string(),
-    timestamp: number(),
-  })
-  .primaryKey("id");
+	.columns({
+		id: string(),
+		senderID: string().from("sender_id"),
+		body: string(),
+		timestamp: number(),
+	})
+	.primaryKey("id");
 
 const messageRelationships = relationships(message, ({ one }) => ({
-  sender: one({
-    sourceField: ["senderID"],
-    destField: ["id"],
-    destSchema: user,
-  }),
+	sender: one({
+		sourceField: ["senderID"],
+		destField: ["id"],
+		destSchema: user,
+	}),
 }));
 
 export const schema = createSchema({
-  tables: [user, message],
-  relationships: [messageRelationships],
-  enableLegacyMutators: false,
-  enableLegacyQueries: false,
+	tables: [user, message],
+	relationships: [messageRelationships],
+	enableLegacyMutators: false,
+	enableLegacyQueries: false,
 });
 
 export type Schema = typeof schema;
@@ -48,7 +48,7 @@ export type User = Row<typeof schema.tables.user>;
 export const zql = createBuilder(schema);
 
 declare module "@rocicorp/zero" {
-  interface DefaultTypes {
-    schema: Schema;
-  }
+	interface DefaultTypes {
+		schema: Schema;
+	}
 }

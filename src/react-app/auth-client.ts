@@ -3,6 +3,6 @@ import { magicLinkClient } from "better-auth/client/plugins";
 import { passkeyClient } from "@better-auth/passkey/client";
 
 export const authClient = createAuthClient({
-  baseURL: window.location.origin,
-  plugins: [magicLinkClient(), passkeyClient()],
+	baseURL: window.location.origin,
+	plugins: [magicLinkClient(), passkeyClient()],
 });

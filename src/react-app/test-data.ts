@@ -1,33 +1,33 @@
 import { randBetween, randID, randInt } from "./rand";
 
 const requests = [
-  "Hey guys, is the zero package ready yet?",
-  "I tried installing the package, but it's not there.",
-  "The package does not install...",
-  "Hey, can you ask Aaron when the npm package will be ready?",
-  "npm npm npm npm npm",
-  "n --- p --- m",
-  "npm wen",
-  "npm package?",
+	"Hey guys, is the zero package ready yet?",
+	"I tried installing the package, but it's not there.",
+	"The package does not install...",
+	"Hey, can you ask Aaron when the npm package will be ready?",
+	"npm npm npm npm npm",
+	"n --- p --- m",
+	"npm wen",
+	"npm package?",
 ];
 
 const replies = [
-  "It will be ready next week",
-  "We'll let you know",
-  "It's not ready - next week",
-  "next week i think",
-  "Didn't we say next week",
-  "I could send you a tarball, but it won't work",
+	"It will be ready next week",
+	"We'll let you know",
+	"It's not ready - next week",
+	"next week i think",
+	"Didn't we say next week",
+	"I could send you a tarball, but it won't work",
 ];
 
 export function randomMessage() {
-  const id = randID();
-  const timestamp = randBetween(1727395200000, new Date().getTime());
-  const isRequest = randInt(10) <= 6;
-  const messages = isRequest ? requests : replies;
-  return {
-    id,
-    body: messages[randInt(messages.length)],
-    timestamp,
-  };
+	const id = randID();
+	const timestamp = randBetween(1727395200000, new Date().getTime());
+	const isRequest = randInt(10) <= 6;
+	const messages = isRequest ? requests : replies;
+	return {
+		id,
+		body: messages[randInt(messages.length)],
+		timestamp,
+	};
 }

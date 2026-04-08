@@ -1,5 +1,5 @@
 export const randBetween = (min: number, max: number) =>
-  Math.floor(Math.random() * (max - min) + min);
+	Math.floor(Math.random() * (max - min) + min);
 
 export const randInt = (max: number) => randBetween(0, max);
 

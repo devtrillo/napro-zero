@@ -8,18 +8,21 @@ import { mutators } from "../shared/mutators.js";
 import { mustGetMutator } from "@rocicorp/zero";
 
 export async function handleMutate(c: Context, userID: string) {
-  const dbProvider = zeroDrizzle(schema, getDb(c.env) as unknown as DrizzleDatabase);
+	const dbProvider = zeroDrizzle(
+		schema,
+		getDb(c.env) as unknown as DrizzleDatabase,
+	);
 
-  const ctx = { userID };
+	const ctx = { userID };
 
-  return await handleMutateRequest(
-    dbProvider,
-    async (transact) => {
-      return await transact(async (tx, name, args) => {
-        const mutator = mustGetMutator(mutators, name);
-        return await mutator.fn({ tx, ctx, args });
-      });
-    },
-    c.req.raw
-  );
+	return await handleMutateRequest(
+		dbProvider,
+		async (transact) => {
+			return await transact(async (tx, name, args) => {
+				const mutator = mustGetMutator(mutators, name);
+				return await mutator.fn({ tx, ctx, args });
+			});
+		},
+		c.req.raw,
+	);
 }
